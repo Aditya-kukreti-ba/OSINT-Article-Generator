@@ -469,7 +469,7 @@ export default function OSINTArticleAI() {
 
     try {
       await nextPhase(); // search
-      const fetchPromise = fetch("http://localhost:3001/api/generate",{
+      const fetchPromise = fetch("/api/generate",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({topic,outputType,tone,keywords})
