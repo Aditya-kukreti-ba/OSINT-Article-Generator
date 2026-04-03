@@ -6,6 +6,9 @@
  * Vercel calls the default export for every POST /api/generate request.
  */
 
+// ── CyberGuard AI — Security Scanner ──
+import { scanForThreats, alertThreats } from './security-scan.js'
+
 // ─────────────────────────────────────────────────────────────
 //  CONFIG
 // ─────────────────────────────────────────────────────────────
@@ -487,6 +490,14 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST')    return res.status(405).json({ error: 'Method not allowed' })
+
+  // ── CyberGuard: Scan every request for attack patterns ──
+  const ip        = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.headers['x-real-ip'] || 'unknown'
+  const userAgent = req.headers['user-agent'] || 'unknown'
+  const threats   = scanForThreats({ path: req.url, body: req.body, method: req.method, ip, userAgent })
+  if (threats.length > 0) {
+    alertThreats(threats) // fire and forget — don't block the response
+  }
 
   const topic      = (req.body.topic      || '').trim()
   const outputType = req.body.outputType  || 'Intelligence Report'
